@@ -59,7 +59,7 @@
                                                                 <%= index + 1 %>
                                                             </td>
                                                             <td>
-                                                                <%= cert.tenchungchi %>
+                                                                <%= cert.chungchi ? cert.chungchi.tenchungchi : 'N/A' %>
                                                             </td>
                                                             <td>
                                                                 <a
@@ -82,6 +82,7 @@
                                                                 <a href="javascript:void(0)"
                                                                     class="btn btn-primary btn-sm btn-capnhat-chungchi"
                                                                     data-id-chungchi="<%= cert.id %>"
+                                                                    data-cert-id="<%= cert.id_chungchi %>"
                                                                     data-id-thuyenvien="<%= cert.id_thuyenvien %>"
                                                                     data-tenchungchi="<%= cert.tenchungchi %>"
                                                                     data-tenthuyenvien="<%= cert.thuyenvien ? cert.thuyenvien.hoten : 'N/A' %>"
@@ -193,8 +194,9 @@
                         </div>
                         <div class="form-group">
                             <label for="editCertificateName">Tên Chứng Chỉ</label>
-                            <input type="text" class="form-control" id="editCertificateName" name="tenchungchi"
-                                readonly>
+                            <select class="form-control" id="editCertificateName" name="id_chungchi" required>
+                                <!-- Options will be populated via AJAX -->
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="editCrewMember">Thuyền Viên</label>
@@ -279,6 +281,23 @@
                     //     '<button class="btn btn-primary" data-toggle="modal" data-target="#addCertificateModal">' +
                     //     '<i class="fas fa-plus"></i> Thêm Chứng Chỉ</button>'
                     // );
+                                            // Load certificates via AJAX and then select the correct one
+                    $.ajax({
+                        url: '/api/chung-chi',
+                        type: 'GET',
+                        success: function(certificates) {
+                            // Clear and populate the dropdown
+                            var select = $('#editCertificateName');
+                            select.empty();
+                            
+                            certificates.forEach(function(cert) {
+                                select.append('<option value="' + cert.id_chungchi + '">' + cert.tenchungchi + '</option>');
+                            });
+                        },
+                        error: function() {
+                            console.error('Failed to load certificates');
+                        }
+                    });
 
                     // Handle Edit button clicks
                     $(document).on('click', '.btn-capnhat-chungchi', function (e) {
@@ -288,12 +307,12 @@
                         $('#editSuccess, #editError').hide();
 
                         // Get data from data attributes
-                        var certId = $(this).data('id-chungchi');
                         var crewId = $(this).data('id-thuyenvien');
                         var noicap = $(this).data('noicap') || '';
                         var sohieuchungchi = $(this).data('sohieuchungchi') || '';
                         var file = $(this).data('file') || '';
-                        var certName = $(this).data('tenchungchi');
+                        var chungchiId = $(this).data('id-chungchi'); // Changed from tenchungchi
+                        var certId = $(this).data('cert-id');
                         var crewName = $(this).data('tenthuyenvien');
 
                         // Get dates from data attributes and convert from DD/MM/YYYY format to YYYY-MM-DD
@@ -301,14 +320,14 @@
                         var expiryDateText = $(this).data('ngayhethan');
 
                         // Populate the form
-                        $('#editCertificateId').val(certId);
+                        $('#editCertificateId').val(chungchiId);
                         $('#editThuyenVienId').val(crewId);
-                        $('#editCertificateName').val(certName);
                         $('#editCrewMember').val(crewName);
                         $('#editIssueDate').val(issueDateText);
                         $('#editExpiryDate').val(expiryDateText);
                         $('#editSoChungChi').val(sohieuchungchi);
                         $('#editNoiCap').val(noicap);
+                        $('#editCertificateName').val(certId);
 
                         // Handle file information
                         if (file && file !== 'undefined') {

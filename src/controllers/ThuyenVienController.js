@@ -784,10 +784,13 @@ let createNewThuyenVien = async (req, res) => {
             
             // Prepare crew certificates
             let crewCertificates = [];
-            if (Array.isArray(req.body['tenchungchi_tv'])) {
-                for (let i = 0; i < req.body['tenchungchi_tv'].length; i++) {
+
+            console.log(req.body);
+
+            if (Array.isArray(req.body['id_chungchi'])) {
+                for (let i = 0; i < req.body['id_chungchi'].length; i++) {
                     const certData = {
-                        tenchungchi: req.body['tenchungchi_tv'][i],
+                        id_chungchi: req.body['id_chungchi'][i],
                         sohieuchungchi: req.body['sohieuchungchi'][i],
                         ngaycap: req.body['ngaycap_tv'][i] || null,
                         ngayhethan: req.body['ngayhethan_tv'][i] || null,
@@ -802,10 +805,10 @@ let createNewThuyenVien = async (req, res) => {
                     
                     crewCertificates.push(certData);
                 }
-            } else if (req.body['tenchungchi_tv']) {
+            } else if (req.body['id_chungchi']) {
                 // Handle single crew certificate
                 const certData = {
-                    tenchungchi: req.body['tenchungchi_tv'],
+                    id_chungchi: req.body['id_chungchi'],
                     sohieuchungchi: req.body['sohieuchungchi'],
                     ngaycap: req.body['ngaycap_tv'] || null,
                     ngayhethan: req.body['ngayhethan_tv'] || null,
@@ -914,6 +917,25 @@ let uploadThuyenVienPhoto = async(req, res) => {
     });
 };
 
+let getAllChungChi = async (req, res) => {
+    try {
+        const certificates = await ThuyenVienServices.getAllChungChi();
+        if (req && res) {
+            // If called as route handler, return JSON response
+            return res.json(certificates);
+        } else {
+            // If called from another function, return the certificates
+            return certificates;
+        }
+    } catch (error) {
+        console.error('Error fetching all certificates:', error);
+        if (req && res) {
+            return res.status(500).json({ error: 'Server error' });
+        }
+        throw error;
+    }
+};
+
 module.exports = {
     getAllThuyenVien: getAllThuyenVien,
     postThuyenVien: postThuyenVien,
@@ -941,4 +963,5 @@ module.exports = {
     createNewThuyenVien: createNewThuyenVien,
     updateThuyenVienStatus: updateThuyenVienStatus,
     uploadThuyenVienPhoto: uploadThuyenVienPhoto,
+    getAllChungChi: getAllChungChi,
 }

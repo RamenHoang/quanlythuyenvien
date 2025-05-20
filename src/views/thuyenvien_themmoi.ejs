@@ -463,7 +463,10 @@
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label>Tên chứng chỉ:</label>
-                                                        <input type="text" class="form-control" name="tenchungchi_tv[]">
+                                                        <select class="form-control certificate-select" name="id_chungchi[]" required>
+                                                            <option value="">-- Chọn chứng chỉ --</option>
+                                                            <!-- Options will be populated via AJAX -->
+                                                        </select>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
@@ -673,7 +676,41 @@
                 $('#languageCertificates').append(newCert);
             });
             
-            // Add crew certificate functionality
+            // Load certificates from API
+            function loadCertificates() {
+                $.ajax({
+                    url: '/api/chung-chi',
+                    type: 'GET',
+                    success: function(certificates) {
+                        // Populate all certificate dropdowns
+                        $('.certificate-select').each(function() {
+                            const select = $(this);
+                            const currentValue = select.val(); // Preserve selected value if any
+                            
+                            // Keep the first option and add certificates
+                            const firstOption = select.find('option:first');
+                            select.empty().append(firstOption);
+                            
+                            certificates.forEach(function(cert) {
+                                select.append(`<option value="${cert.id_chungchi}">${cert.tenchungchi}</option>`);
+                            });
+                            
+                            // Restore selected value if there was one
+                            if (currentValue) {
+                                select.val(currentValue);
+                            }
+                        });
+                    },
+                    error: function() {
+                        console.error('Failed to load certificates');
+                    }
+                });
+            }
+            
+            // Load certificates when page loads
+            loadCertificates();
+            
+            // Modify crew certificate functionality to include certificate dropdown population
             let crewCertCount = 0;
             
             $('#addCrewCert').click(function() {
@@ -684,6 +721,7 @@
                 // Clear input values
                 newCert.find('input[type="text"], input[type="number"], input[type="date"]').val('');
                 newCert.find('input[type="file"]').val('');
+                newCert.find('select').val(''); // Reset select dropdowns
                 
                 // Add remove button
                 newCert.append(`
@@ -693,6 +731,9 @@
                 `);
                 
                 $('#crewCertificates').append(newCert);
+                
+                // Load certificates for the new dropdown
+                loadCertificates();
             });
             
             // Remove certificate

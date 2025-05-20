@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'id_thuyenvien',
                 as: 'thuyenvien'
             });
+
+            ThuyenvienChungchi.belongsTo(models.Chungchi, {
+                foreignKey: 'id_chungchi',
+                as: 'chungchi'
+            });
             
             // Removed belongsTo relationship with Chungchi since we're using tenchungchi directly
         }
@@ -24,9 +29,13 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: false
         },
+        id_chungchi: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
         tenchungchi: {
             type: DataTypes.STRING(255),
-            allowNull: false
+            allowNull: true
         },
         sohieuchungchi: {
             type: DataTypes.STRING(20),

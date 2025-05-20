@@ -407,7 +407,14 @@ let getChungChiThuyenVien = (thuyenvien_id) => {
     return new Promise(async(resolve, reject) => {
         try {
             let chungchi = await db.ThuyenvienChungchi.findAll({
-                where: { id_thuyenvien: thuyenvien_id }
+                where: { id_thuyenvien: thuyenvien_id },
+                include: [
+                    {
+                        model: db.Chungchi,
+                        as: 'chungchi',
+                        attributes: ['tenchungchi']
+                    }
+                ],
                 // Removed include since we no longer need to join with Chungchi table
             });
             
@@ -437,8 +444,8 @@ let createChungChi = (data) => {
     return new Promise(async(resolve, reject) => {
         try {
             const result = await db.ThuyenvienChungchi.create({
+                id_chungchi: data.id_chungchi, // Changed from chungchi_id
                 id_thuyenvien: data.id_thuyenvien,
-                tenchungchi: data.tenchungchi, // Changed from chungchi_id
                 sohieuchungchi: data.sohieuchungchi,
                 ngaycap: data.ngaycap,
                 ngayhethan: data.ngayhethan,
@@ -457,7 +464,7 @@ let updateChungChi = (id, data) => {
     return new Promise(async(resolve, reject) => {
         try {
             let updateData = {
-                tenchungchi: data.tenchungchi, // Changed from chungchi_id
+                id_chungchi: data.id_chungchi, // Changed from chungchi_id
                 sohieuchungchi: data.sohieuchungchi,
                 ngaycap: data.ngaycap,
                 ngayhethan: data.ngayhethan,
@@ -603,6 +610,11 @@ let getExpiringCertificates = (days = 90) => {
                         model: db.Thuyenvien,
                         as: 'thuyenvien',
                         attributes: ['id_thuyenvien', 'hoten']
+                    },
+                    {
+                        model: db.Chungchi,
+                        as: 'chungchi',
+                        attributes: ['tenchungchi']
                     }
                 ],
                 order: [['ngayhethan', 'ASC']]
@@ -633,6 +645,11 @@ let getExpiredCertificates = () => {
                         model: db.Thuyenvien,
                         as: 'thuyenvien',
                         attributes: ['id_thuyenvien', 'hoten']
+                    },
+                    {
+                        model: db.Chungchi,
+                        as: 'chungchi',
+                        attributes: ['tenchungchi']
                     }
                 ],
                 order: [['ngayhethan', 'ASC']]
@@ -683,7 +700,7 @@ let createNewThuyenVienFull = async (crewData, familyData, educationData, langua
         if (crewCertificates && crewCertificates.length > 0) {
             for (const certData of crewCertificates) {
                 // Skip empty certificates
-                if (!certData.tenchungchi) continue;
+                if (!certData.id_chungchi) continue;
                 
                 certData.id_thuyenvien = thuyenvien_id;
                 await db.ThuyenvienChungchi.create(certData, { transaction });

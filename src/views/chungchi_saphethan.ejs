@@ -33,88 +33,91 @@
                     <!-- Topbar -->
                     <%- include('partials/topbar') %>
 
-                    <div class="container-fluid">
-                        <h1 class="h3 mb-2 text-gray-800">Chứng chỉ sắp hết hạn</h1>
-                        <div class="card shadow mb-4">
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered text-center" id="dataTable" width="100%"
-                                        cellspacing="0">
-                                        <thead>
-                                            <tr>
-                                                <th>Stt</th>
-                                                <th>Tên chứng chỉ</th>
-                                                <th>Thuyền viên sở hữu</th>
-                                                <th>Ngày cấp</th>
-                                                <th>Ngày hết hạn</th>
-                                                <th>Trạng thái</th>
-                                                <th>Thao Tác</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% if(certificates && certificates.length> 0) { %>
-                                                <% certificates.forEach((cert, index)=> { %>
-                                                    <tr>
-                                                        <td>
-                                                            <%= index + 1 %>
-                                                        </td>
-                                                        <td>
-                                                            <%= cert.tenchungchi %>
-                                                        </td>
-                                                        <td>
-                                                            <a
-                                                                href="/thuyen-vien/<%= cert.thuyenvien ? cert.thuyenvien.id_thuyenvien : cert.id_thuyenvien %>">
-                                                                <%= cert.thuyenvien ? cert.thuyenvien.hoten : 'N/A' %>
-                                                                    <!-- Change from tenthuyenvien to hoten -->
-                                                            </a>
-                                                        </td>
-                                                        <td>
-                                                            <%= cert.ngaycap %>
-                                                        </td>
-                                                        <td>
-                                                            <%= cert.ngayhethan %>
-                                                        </td>
-                                                        <td
-                                                            class="<%= cert.daysRemaining <= 30 ? 'text-danger' : 'text-warning' %> font-weight-bold">
-                                                            Còn <%= cert.daysRemaining %> ngày
-                                                        </td>
-                                                        <td>
-                                                            <a href="javascript:void(0)"
-                                                                class="btn btn-primary btn-sm btn-capnhat-chungchi"
-                                                                data-id-chungchi="<%= cert.id %>"
-                                                                data-id-thuyenvien="<%= cert.id_thuyenvien %>"
-                                                                data-tenchungchi="<%= cert.tenchungchi %>"
-                                                                data-tenthuyenvien="<%= cert.thuyenvien ? cert.thuyenvien.hoten : 'N/A' %>"
-                                                                data-noicap="<%= cert.noicap %>"
-                                                                data-sohieuchungchi="<%= cert.sohieuchungchi %>"
-                                                                data-ngaycap="<%= cert.ngaycap %>"
-                                                                data-ngayhethan="<%= cert.ngayhethan %>"
-                                                                data-file="<%= cert.file %>" data-toggle="modal"
-                                                                data-target="#editCertificateModal">
-                                                                Cập Nhật
-                                                            </a>
-                                                            <a href="/xoa-chung-chi/<%= cert.id %>/<%= cert.thuyenvien ? cert.thuyenvien.id_thuyenvien : cert.id_thuyenvien %>"
-                                                                class="btn btn-danger btn-sm"
-                                                                onclick="return confirm('Bạn có chắc chắn muốn xóa chứng chỉ này?')">
-                                                                Xóa
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                    <% }); %>
-                                                        <% } else { %>
-                                                            <tr>
-                                                                <td colspan="7" class="text-center">Không có chứng chỉ
-                                                                    nào sắp hết hạn</td>
-                                                            </tr>
-                                                            <% } %>
-                                        </tbody>
-                                    </table>
+                        <div class="container-fluid">
+                            <h1 class="h3 mb-2 text-gray-800">Chứng chỉ sắp hết hạn</h1>
+                            <div class="card shadow mb-4">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered text-center" id="dataTable" width="100%"
+                                            cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Stt</th>
+                                                    <th>Tên chứng chỉ</th>
+                                                    <th>Thuyền viên sở hữu</th>
+                                                    <th>Ngày cấp</th>
+                                                    <th>Ngày hết hạn</th>
+                                                    <th>Trạng thái</th>
+                                                    <th>Thao Tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% if(certificates && certificates.length> 0) { %>
+                                                    <% certificates.forEach((cert, index)=> { %>
+                                                        <tr>
+                                                            <td>
+                                                                <%= index + 1 %>
+                                                            </td>
+                                                            <td>
+                                                                <%= cert.chungchi ? cert.chungchi.tenchungchi : 'N/A' %>
+                                                            </td>
+                                                            <td>
+                                                                <a
+                                                                    href="/thuyen-vien/<%= cert.thuyenvien ? cert.thuyenvien.id_thuyenvien : cert.id_thuyenvien %>">
+                                                                    <%= cert.thuyenvien ? cert.thuyenvien.hoten : 'N/A'
+                                                                        %>
+                                                                        <!-- Change from tenthuyenvien to hoten -->
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <%= cert.ngaycap %>
+                                                            </td>
+                                                            <td>
+                                                                <%= cert.ngayhethan %>
+                                                            </td>
+                                                            <td
+                                                                class="<%= cert.daysRemaining <= 30 ? 'text-danger' : 'text-warning' %> font-weight-bold">
+                                                                Còn <%= cert.daysRemaining %> ngày
+                                                            </td>
+                                                            <td>
+                                                                <a href="javascript:void(0)"
+                                                                    class="btn btn-primary btn-sm btn-capnhat-chungchi"
+                                                                    data-id-chungchi="<%= cert.id %>"
+                                                                    data-cert-id="<%= cert.id_chungchi %>"
+                                                                    data-id-thuyenvien="<%= cert.id_thuyenvien %>"
+                                                                    data-tenchungchi="<%= cert.tenchungchi %>"
+                                                                    data-tenthuyenvien="<%= cert.thuyenvien ? cert.thuyenvien.hoten : 'N/A' %>"
+                                                                    data-noicap="<%= cert.noicap %>"
+                                                                    data-sohieuchungchi="<%= cert.sohieuchungchi %>"
+                                                                    data-ngaycap="<%= cert.ngaycap %>"
+                                                                    data-ngayhethan="<%= cert.ngayhethan %>"
+                                                                    data-file="<%= cert.file %>" data-toggle="modal"
+                                                                    data-target="#editCertificateModal">
+                                                                    Cập Nhật
+                                                                </a>
+                                                                <a href="/xoa-chung-chi/<%= cert.id %>/<%= cert.thuyenvien ? cert.thuyenvien.id_thuyenvien : cert.id_thuyenvien %>"
+                                                                    class="btn btn-danger btn-sm"
+                                                                    onclick="return confirm('Bạn có chắc chắn muốn xóa chứng chỉ này?')">
+                                                                    Xóa
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                        <% }); %>
+                                                            <% } else { %>
+                                                                <tr>
+                                                                    <td colspan="7" class="text-center">Không có chứng
+                                                                        chỉ
+                                                                        nào sắp hết hạn</td>
+                                                                </tr>
+                                                                <% } %>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
+
+
                         </div>
-
-
-                    </div>
 
                 </div>
 
@@ -198,8 +201,9 @@
                         </div>
                         <div class="form-group">
                             <label for="editCertificateName">Tên Chứng Chỉ</label>
-                            <input type="text" class="form-control" id="editCertificateName" name="tenchungchi"
-                                readonly>
+                            <select class="form-control" id="editCertificateName" name="id_chungchi" required>
+                                <!-- Options will be populated via AJAX -->
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="editCrewMember">Thuyền Viên</label>
@@ -272,113 +276,130 @@
 
     <% include('partials/logout-modal') %>
 
-    <%- include('partials/scripts') %>
+        <%- include('partials/scripts') %>
 
-        <!-- Add Button to open the Add Certificate Modal -->
-        <script>
-            $(document).ready(function () {
-                // Remove the code that adds the button
-                // $('.card-body .d-flex.justify-content-between.mb-3').append(
-                //     '<button class="btn btn-primary" data-toggle="modal" data-target="#addCertificateModal">' +
-                //     '<i class="fas fa-plus"></i> Thêm Chứng Chỉ</button>'
-                // );
-
-                // Handle Edit button clicks
-                $(document).on('click', '.btn-capnhat-chungchi', function (e) {
-                    e.preventDefault();
-
-                    // Reset alert messages
-                    $('#editSuccess, #editError').hide();
-
-                    // Get data from data attributes
-                    var certId = $(this).data('id-chungchi');
-                    var crewId = $(this).data('id-thuyenvien');
-                    var noicap = $(this).data('noicap') || '';
-                    var sohieuchungchi = $(this).data('sohieuchungchi') || '';
-                    var file = $(this).data('file') || '';
-                    var certName = $(this).data('tenchungchi');
-                    var crewName = $(this).data('tenthuyenvien');
-
-                    // Get dates from data attributes and convert from DD/MM/YYYY format to YYYY-MM-DD
-                    var issueDateText = $(this).data('ngaycap');
-                    var expiryDateText = $(this).data('ngayhethan');
-
-                    // Populate the form
-                    $('#editCertificateId').val(certId);
-                    $('#editThuyenVienId').val(crewId);
-                    $('#editCertificateName').val(certName);
-                    $('#editCrewMember').val(crewName);
-                    $('#editIssueDate').val(issueDateText);
-                    $('#editExpiryDate').val(expiryDateText);
-                    $('#editSoChungChi').val(sohieuchungchi);
-                    $('#editNoiCap').val(noicap);
-
-                    // Handle file information
-                    if (file && file !== 'undefined') {
-                        $('#currentFileName').text(file.split('/').pop());
-                        $('#viewCurrentFile').attr('href', file).show();
-                    } else {
-                        $('#currentFileName').text('Không có file');
-                        $('#viewCurrentFile').hide();
-                    }
-
-                    // Show the modal
-                    $('#editCertificateModal').modal('show');
-                });
-
-                // Handle Edit Form submission with AJAX
-                $('#editCertificateForm').on('submit', function (e) {
-                    e.preventDefault();
-
-                    var formData = $(this).serialize();
-
+            <!-- Add Button to open the Add Certificate Modal -->
+            <script>
+                $(document).ready(function () {
+                    // Remove the code that adds the button
+                    // $('.card-body .d-flex.justify-content-between.mb-3').append(
+                    //     '<button class="btn btn-primary" data-toggle="modal" data-target="#addCertificateModal">' +
+                    //     '<i class="fas fa-plus"></i> Thêm Chứng Chỉ</button>'
+                    // );
+                    // Load certificates via AJAX and then select the correct one
                     $.ajax({
-                        url: '/cap-nhat-chung-chi',
-                        type: 'POST',
-                        data: formData,
-                        success: function (response) {
-                            $('#editSuccess').show();
-                            $('#editError').hide();
+                        url: '/api/chung-chi',
+                        type: 'GET',
+                        success: function (certificates) {
+                            // Clear and populate the dropdown
+                            var select = $('#editCertificateName');
+                            select.empty();
 
-                            // Reload the page after a short delay
-                            setTimeout(function () {
-                                location.reload();
-                            }, 1500);
+                            certificates.forEach(function (cert) {
+                                select.append('<option value="' + cert.id_chungchi + '">' + cert.tenchungchi + '</option>');
+                            });
                         },
                         error: function () {
-                            $('#editError').show();
-                            $('#editSuccess').hide();
+                            console.error('Failed to load certificates');
                         }
                     });
-                });
 
-                // Handle Delete button clicks
-                $(document).on('click', '.btn-danger:contains("Xóa")', function () {
-                    var row = $(this).closest('tr');
-                    var id = row.find('td:first').text();
-                    $('#deleteCertificateId').val(id);
-                    $('#deleteCertificateModal').modal('show');
-                });
+                    // Handle Edit button clicks
+                    $(document).on('click', '.btn-capnhat-chungchi', function (e) {
+                        e.preventDefault();
 
-                // Handle form submissions (these would connect to your backend)
-                $('#addCertificateForm').on('submit', function (e) {
-                    e.preventDefault();
-                    // Here you would make an AJAX request to create a new certificate
-                    alert('Đã thêm chứng chỉ thành công!');
-                    $('#addCertificateModal').modal('hide');
-                    // Reload the page or update the table
-                    // location.reload();
-                });
+                        // Reset alert messages
+                        $('#editSuccess, #editError').hide();
 
-                $('#confirmDeleteBtn').on('click', function () {
-                    // Here you would make an AJAX request to delete the certificate
-                    alert('Đã xóa chứng chỉ thành công!');
-                    $('#deleteCertificateModal').modal('hide');
-                    // Reload the page or update the table
-                    // location.reload();
-                });
+                        // Get data from data attributes
+                        var certId = $(this).data('cert-id');
+                        var crewId = $(this).data('id-thuyenvien');
+                        var noicap = $(this).data('noicap') || '';
+                        var sohieuchungchi = $(this).data('sohieuchungchi') || '';
+                        var file = $(this).data('file') || '';
+                        var chungchiId = $(this).data('id-chungchi'); // Changed from tenchungchi
+                        var crewName = $(this).data('tenthuyenvien');
 
-                // Fetch certificate and crew data for dropdowns
-                // These would be actual AJAX calls to your backend
-            });
-        </script>
+                        // Get dates from data attributes and convert from DD/MM/YYYY format to YYYY-MM-DD
+                        var issueDateText = $(this).data('ngaycap');
+                        var expiryDateText = $(this).data('ngayhethan');
+
+                        // Populate the form
+                        $('#editCertificateId').val(chungchiId);
+                        $('#editThuyenVienId').val(crewId);
+                        $('#editCrewMember').val(crewName);
+                        $('#editIssueDate').val(issueDateText);
+                        $('#editExpiryDate').val(expiryDateText);
+                        $('#editSoChungChi').val(sohieuchungchi);
+                        $('#editNoiCap').val(noicap);
+                        $('#editCertificateName').val(certId);
+
+                        // Handle file information
+                        if (file && file !== 'undefined') {
+                            $('#currentFileName').text(file.split('/').pop());
+                            $('#viewCurrentFile').attr('href', file).show();
+                        } else {
+                            $('#currentFileName').text('Không có file');
+                            $('#viewCurrentFile').hide();
+                        }
+
+                        // Show the modal
+                        $('#editCertificateModal').modal('show');
+                    });
+
+                    // Handle Edit Form submission with AJAX
+                    $('#editCertificateForm').on('submit', function (e) {
+                        e.preventDefault();
+
+                        var formData = $(this).serialize();
+
+                        $.ajax({
+                            url: '/cap-nhat-chung-chi',
+                            type: 'POST',
+                            data: formData,
+                            success: function (response) {
+                                $('#editSuccess').show();
+                                $('#editError').hide();
+
+                                // Reload the page after a short delay
+                                setTimeout(function () {
+                                    location.reload();
+                                }, 1500);
+                            },
+                            error: function () {
+                                $('#editError').show();
+                                $('#editSuccess').hide();
+                            }
+                        });
+                    });
+
+                    // Handle Delete button clicks
+                    $(document).on('click', '.btn-danger:contains("Xóa")', function () {
+                        var row = $(this).closest('tr');
+                        var id = row.find('td:first').text();
+                        $('#deleteCertificateId').val(id);
+                        $('#deleteCertificateModal').modal('show');
+                    });
+
+                    // Handle form submissions (these would connect to your backend)
+                    $('#addCertificateForm').on('submit', function (e) {
+                        e.preventDefault();
+                        // Here you would make an AJAX request to create a new certificate
+                        alert('Đã thêm chứng chỉ thành công!');
+                        $('#addCertificateModal').modal('hide');
+                        // Reload the page or update the table
+                        // location.reload();
+                    });
+
+                    $('#confirmDeleteBtn').on('click', function () {
+                        // Here you would make an AJAX request to delete the certificate
+                        alert('Đã xóa chứng chỉ thành công!');
+                        $('#deleteCertificateModal').modal('hide');
+                        // Reload the page or update the table
+                        // location.reload();
+                    });
+
+                    // Fetch certificate and crew data for dropdowns
+                    // These would be actual AJAX calls to your backend
+                });
+            </script>

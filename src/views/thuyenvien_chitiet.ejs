@@ -407,7 +407,7 @@
                                                 <tbody>
                                                     <% for (let i = 0; i < chungchiinfo.length; i++) { %>
                                                         <tr>
-                                                            <td><%= chungchiinfo[i].tenchungchi %></td>
+                                                            <td><%= chungchiinfo[i].chungchi ? chungchiinfo[i].chungchi.tenchungchi : '' %></td>
                                                             <td><%= chungchiinfo[i].sohieuchungchi %></td>
                                                             <td>
                                                                 <% if (chungchiinfo[i].ngaycap) { %>
@@ -462,7 +462,7 @@
                                                                 <button 
                                                                     class="btn btn-sm btn-warning editCrewCertBtn"
                                                                     data-id="<%= chungchiinfo[i].id %>"
-                                                                    data-cert-name="<%= chungchiinfo[i].tenchungchi %>"
+                                                                    data-cert-id="<%= chungchiinfo[i].id_chungchi %>"
                                                                     data-cert-number="<%= chungchiinfo[i].sohieuchungchi %>"
                                                                     data-issued="<%= chungchiinfo[i].ngaycap ? (typeof chungchiinfo[i].ngaycap === 'string' ? chungchiinfo[i].ngaycap.split('T')[0] : (chungchiinfo[i].ngaycap instanceof Date ? chungchiinfo[i].ngaycap.toISOString().split('T')[0] : chungchiinfo[i].ngaycap)) : '' %>"
                                                                     data-expired="<%= chungchiinfo[i].ngayhethan ? (typeof chungchiinfo[i].ngayhethan === 'string' ? chungchiinfo[i].ngayhethan.split('T')[0] : (chungchiinfo[i].ngayhethan instanceof Date ? chungchiinfo[i].ngayhethan.toISOString().split('T')[0] : chungchiinfo[i].ngayhethan)) : '' %>"
@@ -1226,7 +1226,8 @@
                                         <input type="hidden" name="id_thuyenvien" value="<%= thuyenvieninfo.id_thuyenvien %>">
                                         <div class="form-group">
                                             <label>Tên chứng chỉ:</label>
-                                            <input type="text" class="form-control" name="tenchungchi" required>
+                                            <select id="addCertificateName" class="form-control" name="id_chungchi" required>
+                                            </select>
                                         </div>
                                         <div class="form-group">
                                             <label>Số hiệu chứng chỉ:</label>
@@ -1279,7 +1280,8 @@
                                         <input type="hidden" name="id_thuyenvien" value="<%= thuyenvieninfo.id_thuyenvien %>">
                                         <div class="form-group">
                                             <label>Tên chứng chỉ:</label>
-                                            <input type="text" class="form-control" id="editCrewCertName" name="tenchungchi" required>
+                                            <select class="form-control" id="editCrewCertName" name="id_chungchi" required>
+                                            </select>
                                         </div>
                                         <div class="form-group">
                                             <label>Số hiệu chứng chỉ:</label>
@@ -1327,15 +1329,29 @@
                         $('.editCrewCertBtn').on('click', function() {
                             // Get data from button attributes
                             const id = $(this).data('id');
-                            const certName = $(this).data('cert-name'); // Changed from certId
+                            const certId = $(this).data('cert-id'); // Changed from cert-name to cert-id
                             const certNumber = $(this).data('cert-number');
-                            // ...existing code...
+                            const issued = $(this).data('issued');
+                            const expired = $(this).data('expired');
+                            const issuer = $(this).data('issuer');
+                            const rank = $(this).data('rank');
+                            const file = $(this).data('file');
                             
                             // Populate form fields with current data
                             $('#editCrewCertId').val(id);
-                            $('#editCrewCertName').val(certName); // Changed from editCrewCertType
+                            $('#editCrewCertName').val(certId); // This now selects the dropdown option with the correct ID
                             $('#editCrewCertNumber').val(certNumber);
-                            // ...existing code...
+                            $('#editCrewCertIssued').val(issued);
+                            $('#editCrewCertExpired').val(expired);
+                            $('#editCrewCertIssuer').val(issuer);
+                            $('#editCrewCertRank').val(rank);
+                            
+                            // Update file info section
+                            if (file && file !== '') {
+                                $('#currentCrewCertFileName').html('<a href="' + file + '" target="_blank">View current file</a>');
+                            } else {
+                                $('#currentCrewCertFileName').text('No file attached');
+                            }
                         });
                     });
                     </script>
@@ -1396,6 +1412,34 @@
         <script>
             // Tab functionality
             $(document).ready(function () {
+                // Load certificates via AJAX and then select the correct one
+                $.ajax({
+                    url: '/api/chung-chi',
+                    type: 'GET',
+                    success: function(certificates) {
+                        // Clear and populate the dropdown
+                        var select = $('#editCrewCertName');
+                        select.empty();
+                        
+                        certificates.forEach(function(cert) {
+                            select.append('<option value="' + cert.id_chungchi + '">' + cert.tenchungchi + '</option>');
+                        });
+
+                        var select = $('#addCertificateName');
+                        select.empty();
+                        
+                        certificates.forEach(function(cert) {
+                            select.append('<option value="' + cert.id_chungchi + '">' + cert.tenchungchi + '</option>');
+                        });
+                        
+                        // // Set the correct certificate
+                        // select.val(chungchiId);
+                    },
+                    error: function() {
+                        console.error('Failed to load certificates');
+                    }
+                });
+
                 // Enable Bootstrap tabs
                 $('#crewTabs a').on('click', function (e) {
                     e.preventDefault();
@@ -1448,7 +1492,7 @@
                 $('.editCrewCertBtn').on('click', function() {
                     // Get data from button attributes
                     const id = $(this).data('id');
-                    const certName = $(this).data('cert-name');
+                    const certId = $(this).data('cert-id'); // Changed from cert-name to cert-id
                     const certNumber = $(this).data('cert-number');
                     const issued = $(this).data('issued');
                     const expired = $(this).data('expired');
@@ -1458,7 +1502,7 @@
                     
                     // Populate form fields with current data
                     $('#editCrewCertId').val(id);
-                    $('#editCrewCertName').val(certName);
+                    $('#editCrewCertName').val(certId); // This now selects the dropdown option with the correct ID
                     $('#editCrewCertNumber').val(certNumber);
                     $('#editCrewCertIssued').val(issued);
                     $('#editCrewCertExpired').val(expired);

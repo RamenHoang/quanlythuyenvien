@@ -101,6 +101,9 @@ const initWebRoutes = (app) => {
     // Add photo upload route
     router.post('/upload-anh-thuyen-vien/:id', ThuyenVienController.uploadThuyenVienPhoto);
     
+    // Add API endpoint to get all certificates
+    router.get('/api/chung-chi', ThuyenVienController.getAllChungChi);
+    
     app.use("/", router);
 };
 
