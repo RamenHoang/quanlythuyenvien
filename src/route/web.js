@@ -4,6 +4,7 @@ import UserController from '../controllers/UserController';
 import ThuyenVienController from '../controllers/ThuyenVienController';
 import AuthController from '../controllers/AuthController';
 import AuthMiddleware from '../middlewares/AuthMiddleware';
+import NotificationMiddleware from '../middlewares/NotificationMiddleware';
 
 const router = express.Router();
 
@@ -30,6 +31,9 @@ const initWebRoutes = (app) => {
         }
         return AuthMiddleware.isAuthenticated(req, res, next);
     });
+    
+    // Add notification middleware for authenticated routes
+    router.use(NotificationMiddleware.injectNotificationData);
     
     // Dashboard route
     router.get('/', AuthMiddleware.checkPermission, (req, res) => {
@@ -103,6 +107,9 @@ const initWebRoutes = (app) => {
     
     // Add API endpoint to get all certificates
     router.get('/api/chung-chi', ThuyenVienController.getAllChungChi);
+    
+    // Add API endpoint to get crew members with specific certificates
+    router.get('/api/crew-with-certificates', ThuyenVienController.getCrewWithCertificates);
     
     app.use("/", router);
 };

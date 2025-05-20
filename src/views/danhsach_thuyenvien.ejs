@@ -75,6 +75,13 @@
                                             <option value="Đang trên bờ">Đang trên bờ</option>
                                         </select>
                                     </div>
+                                    <!-- Chứng chỉ -->
+                                    <div class="col-md-6">
+                                        <label for="certificateFilter">Lọc theo chứng chỉ:</label>
+                                        <select id="certificateFilter" class="form-control" multiple>
+                                            <!-- Certificate options will be loaded via JavaScript -->
+                                        </select>
+                                    </div>
                                 </div>
                                 <table class="table table-bordered text-center" id="dataAllThuyenVienTable" width="100%" cellspacing="0">
                                     <thead class="table-secondary">
@@ -85,6 +92,7 @@
                                             <th>Số Điện Thoại</th>
                                             <th>Email</th>
                                             <th>Trạng thái</th>
+                                            <th>Thời gian lên tàu dự kiến</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -97,6 +105,13 @@
                                             <td><%= allThuyenVien[i].sodienthoai %></td>
                                             <td><%= allThuyenVien[i].email %></td>
                                             <td><span class="badge badge-primary"><%= allThuyenVien[i].trangthai %></span></td>
+                                            <td>
+                                                <% if(allThuyenVien[i].trangthai === 'Đang chờ tàu' && estimatedBoardingTimes && estimatedBoardingTimes[allThuyenVien[i].id_thuyenvien]) { %>
+                                                    <%= estimatedBoardingTimes[allThuyenVien[i].id_thuyenvien] %>
+                                                <% } else { %>
+                                                    -
+                                                <% } %>
+                                            </td>
                                         </tr>
                                         <% } %>
                                     </tbody>
@@ -144,6 +159,111 @@
                 // Xử lý xóa dữ liệu (sẽ được thêm sau)
                 alert('Đã xóa ' + checkboxes.length + ' thuyền viên');
             }
+        }
+
+        // Load certificates and initialize filter
+        $(document).ready(function() {
+            // First add select2 CSS and JS if not already included
+            if (!$('link[href*="select2.min.css"]').length) {
+                $('head').append('<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />');
+            }
+            
+            // Load Select2 script and initialize after it's loaded
+            if (!$('script[src*="select2.min.js"]').length) {
+                $.getScript('https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', function() {
+                    initializeCertificateFilter();
+                });
+            } else {
+                initializeCertificateFilter();
+            }
+        });
+        
+        function initializeCertificateFilter() {
+            console.log("Initializing certificate filter");
+            // Load all certificates from API
+            $.ajax({
+                url: '/api/chung-chi',
+                type: 'GET',
+                dataType: 'json',
+                success: function(certificates) {
+                    console.log("Certificates loaded:", certificates);
+                    
+                    // Populate certificate dropdown
+                    var select = $('#certificateFilter');
+                    select.empty(); // Clear any existing options
+                    
+                    certificates.forEach(function(cert) {
+                        select.append('<option value="' + cert.id_chungchi + '">' + cert.tenchungchi + '</option>');
+                    });
+                    
+                    // Initialize the multi-select plugin
+                    select.select2({
+                        placeholder: 'Chọn các chứng chỉ...',
+                        width: '100%'
+                    });
+                    
+                    // Add change event for certificate filter AFTER select2 initialization
+                    select.on('change', function() {
+                        console.log("Certificate selection changed:", $(this).val());
+                        filterTableByCertificates();
+                    });
+                },
+                error: function(error) {
+                    console.error('Error loading certificates:', error);
+                    alert('Không thể tải danh sách chứng chỉ: ' + error.statusText);
+                }
+            });
+        }
+        
+        // Function to filter table by selected certificates
+        function filterTableByCertificates() {
+            var selectedCertificates = $('#certificateFilter').val();
+            console.log("Selected certificates for filtering:", selectedCertificates);
+            
+            if (!selectedCertificates || selectedCertificates.length === 0) {
+                // If no certificates selected, show all rows
+                console.log("No certificates selected, showing all rows");
+                
+                // Remove any existing custom filters first
+                if ($.fn.dataTable.ext.search.length > 0) {
+                    $.fn.dataTable.ext.search.pop();
+                }
+                
+                $('#dataAllThuyenVienTable').DataTable().draw();
+                return;
+            }
+            
+            // Get all crew member ids who have the selected certificates
+            $.ajax({
+                url: '/api/crew-with-certificates',
+                type: 'GET',
+                data: { certificates: selectedCertificates.join(',') },
+                dataType: 'json',
+                success: function(crewIds) {
+                    console.log("Received crew IDs with certificates:", crewIds);
+                    
+                    // Remove any existing custom filters first
+                    if ($.fn.dataTable.ext.search.length > 0) {
+                        $.fn.dataTable.ext.search.pop();
+                    }
+                    
+                    // Add custom filter for certificate
+                    $.fn.dataTable.ext.search.push(
+                        function(settings, data, dataIndex) {
+                            // Crew ID is in column 1 (index 1)
+                            var crewId = parseInt(data[1]);
+                            return crewIds.includes(crewId);
+                        }
+                    );
+                    
+                    // Apply the filter
+                    $('#dataAllThuyenVienTable').DataTable().draw();
+                },
+                error: function(error) {
+                    console.error('Error filtering by certificates:', error);
+                    alert('Lỗi khi lọc theo chứng chỉ: ' + error.statusText);
+                }
+            });
         }
 
         // Prevent DataTables reinitialization

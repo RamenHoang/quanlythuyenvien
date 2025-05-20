@@ -214,8 +214,23 @@ const uploadNewCrewFiles = multer({
 
 let getAllThuyenVien = async (req, res) => {
     let data = await ThuyenVienServices.getAllThuyenVien();
+    let certificates = await ThuyenVienServices.getAllChungChi();
+    
+    // Get the IDs of all crew members with "Đang chờ tàu" status
+    const waitingCrewIds = data
+        .filter(crew => crew.trangthai === 'Đang chờ tàu')
+        .map(crew => crew.id_thuyenvien);
+    
+    // Get estimated boarding times for waiting crew
+    let estimatedBoardingTimes = {};
+    if (waitingCrewIds.length > 0) {
+        estimatedBoardingTimes = await ThuyenVienServices.getEstimatedBoardingTimes(waitingCrewIds);
+    }
+    
     return res.render('danhsach_thuyenvien.ejs', {
-        allThuyenVien : data
+        allThuyenVien: data,
+        certificates: certificates,
+        estimatedBoardingTimes: estimatedBoardingTimes
     });
 };
 
@@ -650,8 +665,11 @@ let getExpiringCertificates = async (req, res) => {
 
 let getExpiredCertificates = async (req, res) => {
     try {
+        // Get certificate type filter from query, if any
+        const certificateType = req.query.type ? parseInt(req.query.type) : null;
+        
         // Get only professional certificates
-        const expiredCertificates = await ThuyenVienServices.getExpiredCertificates();
+        const expiredCertificates = await ThuyenVienServices.getExpiredCertificates(certificateType);
         
         // Calculate days overdue for each certificate
         const processedCertificates = expiredCertificates.map(cert => {
@@ -936,6 +954,68 @@ let getAllChungChi = async (req, res) => {
     }
 };
 
+let getCrewWithCertificates = async (req, res) => {
+    try {
+        // Get certificates from query parameter
+        const certificateIds = req.query.certificates ? req.query.certificates.split(',').map(id => parseInt(id)) : [];
+        
+        if (!certificateIds.length) {
+            return res.json([]);
+        }
+        
+        // Get crew IDs who have the selected certificates
+        const crewIds = await ThuyenVienServices.getCrewWithCertificates(certificateIds);
+        return res.json(crewIds);
+    } catch (error) {
+        console.error('Error getting crew with certificates:', error);
+        return res.status(500).json({ error: 'Server error' });
+    }
+};
+
+// Add a new method to get notification counts
+let getNotificationCounts = async () => {
+    try {
+        // Get expiring certificates count
+        const expiringCertificatesCount = await db.ThuyenvienChungchi.count({
+            where: {
+                ngayhethan: {
+                    [db.Sequelize.Op.between]: [
+                        new Date(new Date() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+                        new Date() // today
+                    ]
+                }
+            }
+        });
+
+        // Get crew members who boarded in the last 30 days (distinct by thuyenvien_id)
+        const recentBoardingsCount = await db.Lichsuditau.count({
+            where: {
+                timelentau: {
+                    [db.Sequelize.Op.between]: [
+                        new Date(new Date() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+                        new Date() // today
+                    ]
+                }
+            },
+            distinct: true,
+            col: 'thuyenvien_id'
+        });
+
+        return {
+            expiringCertificatesCount,
+            recentBoardingsCount,
+            totalCount: expiringCertificatesCount + recentBoardingsCount
+        };
+    } catch (error) {
+        console.error('Error fetching notification counts:', error);
+        return {
+            expiringCertificatesCount: 0,
+            recentBoardingsCount: 0,
+            totalCount: 0
+        };
+    }
+}
+
 module.exports = {
     getAllThuyenVien: getAllThuyenVien,
     postThuyenVien: postThuyenVien,
@@ -964,4 +1044,6 @@ module.exports = {
     updateThuyenVienStatus: updateThuyenVienStatus,
     uploadThuyenVienPhoto: uploadThuyenVienPhoto,
     getAllChungChi: getAllChungChi,
+    getCrewWithCertificates: getCrewWithCertificates,
+    getNotificationCounts: getNotificationCounts,
 }

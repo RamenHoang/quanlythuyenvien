@@ -7,36 +7,49 @@
             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-bell fa-fw"></i>
-                <span class="badge badge-danger badge-counter">2+</span>
+                <span class="badge badge-danger badge-counter">
+                    <%= typeof notifications !== 'undefined' && notifications.totalCount > 0 ? notifications.totalCount + '+' : '0' %>
+                </span>
             </a>
             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                 aria-labelledby="alertsDropdown">
                 <h6 class="dropdown-header">
                     Thông báo
                 </h6>
-                <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="mr-3">
-                        <div class="icon-circle bg-primary">
-                            <i class="fas fa-file-alt text-white"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="small text-gray-500">19/3/2025</div>
-                        <span class="font-weight-bold">Có 1 hợp đồng sắp hết hạn</span>
-                    </div>
-                </a>
-                <a class="dropdown-item d-flex align-items-center" href="#">
+                <% if (typeof notifications !== 'undefined' && notifications.expiringCertificatesCount > 0) { %>
+                <a class="dropdown-item d-flex align-items-center" href="/cer-expiring">
                     <div class="mr-3">
                         <div class="icon-circle bg-warning">
                             <i class="fas fa-exclamation-triangle text-white"></i>
                         </div>
                     </div>
                     <div>
-                        <div class="small text-gray-500">19/3/2024</div>
-                        Có 1 chứng chỉ sắp hết hạn
+                        <div class="small text-gray-500"><%= new Date().toLocaleDateString('vi-VN') %></div>
+                        <span class="font-weight-bold">Có <%= notifications.expiringCertificatesCount %> chứng chỉ sắp hết hạn</span>
                     </div>
                 </a>
-                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+                <% } %>
+                <% if (typeof notifications !== 'undefined' && notifications.recentBoardingsCount > 0) { %>
+                <a class="dropdown-item d-flex align-items-center" href="/danh-sach-thuyen-vien">
+                    <div class="mr-3">
+                        <div class="icon-circle bg-primary">
+                            <i class="fas fa-ship text-white"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="small text-gray-500"><%= new Date().toLocaleDateString('vi-VN') %></div>
+                        <span class="font-weight-bold"><%= notifications.recentBoardingsCount %> thuyền viên chuẩn bị lên tàu</span>
+                    </div>
+                </a>
+                <% } %>
+                <% if (typeof notifications === 'undefined' || notifications.totalCount === 0) { %>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                    <div>
+                        <span class="font-weight-bold">Không có thông báo mới</span>
+                    </div>
+                </a>
+                <% } %>
+                <!-- <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a> -->
             </div>
         </li>
 
