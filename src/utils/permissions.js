@@ -15,6 +15,7 @@ const routePermissions = {
   
   // Manager routes (crew, certificates, contracts, documents)
   '/danh-sach-thuyen-vien': [ROLES.ADMIN, ROLES.MANAGER],
+  '/them-thuyen-vien': [ROLES.ADMIN, ROLES.MANAGER],
   '/thuyen-vien': [ROLES.ADMIN, ROLES.MANAGER],
   '/cer-expiring': [ROLES.ADMIN, ROLES.MANAGER],
   '/cer-expired': [ROLES.ADMIN, ROLES.MANAGER],
@@ -24,6 +25,8 @@ const routePermissions = {
   '/list-job': [ROLES.ADMIN, ROLES.MANAGER],
   '/list-ship': [ROLES.ADMIN, ROLES.MANAGER],
   '/list-cer': [ROLES.ADMIN, ROLES.MANAGER],
+
+  '/api/chung-chi': [ROLES.ADMIN, ROLES.MANAGER],
   
   // Finance routes
   '/payroll': [ROLES.ADMIN, ROLES.FINANCE],
@@ -37,6 +40,11 @@ const hasAccess = (role, path) => {
   // For specific paths like /thuyen-vien/{id}, we need to check the base route
   const basePath = '/' + path.split('/')[1];
   
+  console.log('Base Path:', basePath);
+  console.log('Role:', role);
+  console.log('Path:', path);
+  console.log('Route Permissions:', routePermissions);
+
   // Check if the route is defined in permissions
   if (routePermissions[path]) {
     return routePermissions[path].includes(Number(role));

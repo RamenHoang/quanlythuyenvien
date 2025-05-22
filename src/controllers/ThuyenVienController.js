@@ -723,6 +723,10 @@ let createNewThuyenVien = async (req, res) => {
         
         try {
             // Extract basic crew info from request body
+            let thoigianlentaudukien = null;
+            if (req.body.thoigian_lenTauDuKien) {
+                thoigianlentaudukien = req.body.thoigian_lenTauDuKien.replace('T', ' ');
+            }
             const crewData = {
                 hoten: req.body.hoten,
                 ngaysinh: req.body.ngaysinh,
@@ -734,7 +738,8 @@ let createNewThuyenVien = async (req, res) => {
                 sizegiaybaoho: req.body.sizegiaybaoho,
                 email: req.body.email,
                 sodienthoai: req.body.sodienthoai,
-                tinhtranghonnhan: req.body.tinhtranghonnhan
+                tinhtranghonnhan: req.body.tinhtranghonnhan,
+                thoigian_lenTauDuKien: thoigianlentaudukien,
             };
             
             // Add crew photo path if uploaded
@@ -1044,17 +1049,15 @@ let getNotificationCounts = async () => {
         });
 
         // Get crew members who boarded in the last 30 days (distinct by thuyenvien_id)
-        const recentBoardingsCount = await db.Lichsuditau.count({
+        const recentBoardingsCount = await db.Thuyenvien.count({
             where: {
-                timelentau: {
-                    [db.Sequelize.Op.between]: [
-                        new Date(new Date() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-                        new Date() // today
-                    ]
-                }
+            thoigian_lenTauDuKien: {
+                [db.Sequelize.Op.between]: [
+                new Date(), // today
+                new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days in the future
+                ]
+            }
             },
-            distinct: true,
-            col: 'thuyenvien_id'
         });
 
         return {
