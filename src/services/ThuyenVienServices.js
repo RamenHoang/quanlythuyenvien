@@ -143,20 +143,16 @@ let getLichSuDiTau = (thuyenvien_id) => {
 let createLichSuDiTau = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let hour = parseInt(data.timelentau.split(':')[0]) + 7;
-            if (hour >= 24) {
-                hour -= 24;
-            }
-            let minute = data.timelentau.split(':')[1];
             // Create new lichsuditau record
             const result = await db.Lichsuditau.create({
                 thuyenvien_id: data.thuyenvien_id,
                 tau_id: data.tau_id,
                 chucvu_id: data.chucvu_id,
                 timexuatcanh: data.timexuatcanh,
-                timelentau: `2025-01-01 ${hour}:${minute}:00`,
+                timelentau: data.timelentau,
                 ngayroitau: data.ngayroitau || null,
-                cangroitau: data.cangroitau || null
+                cangroitau: data.cangroitau || null,
+                quoctich_thuyen: data.quoctich_thuyen || null,
             });
             
             resolve('Thêm lịch sử đi tàu thành công!');
@@ -171,18 +167,14 @@ let updateLichSuDiTauData = (historyId, data) => {
     return new Promise(async (resolve, reject) => {
         try {
             // Create update object with IDs directly from form
-            let hour = parseInt(data.timelentau.split(':')[0]) + 7;
-            if (hour >= 24) {
-                hour -= 24;
-            }
-            let minute = data.timelentau.split(':')[1];
             const updateData = {
                 tau_id: data.tau_id,
                 chucvu_id: data.chucvu_id,
                 timexuatcanh: data.timexuatcanh,
-                timelentau: `2025-01-01 ${hour}:${minute}:00`,
+                timelentau: data.timelentau,
                 ngayroitau: data.ngayroitau,
-                cangroitau: data.cangroitau
+                cangroitau: data.cangroitau,
+                quoctich_thuyen: data.quoctich_thuyen,
             };
             
             await db.Lichsuditau.update(
@@ -784,7 +776,7 @@ let getCrewWithCertificates = (certificateIds) => {
 let getEstimatedBoardingTimes = (crewIds) => {
     return new Promise(async(resolve, reject) => {
         try {
-            // For each crew member, get their latest boarding time record
+            // For each crew member, get their planned boarding time
             let boardingTimes = {};
             
             // If no crew IDs provided, return empty object
@@ -793,45 +785,37 @@ let getEstimatedBoardingTimes = (crewIds) => {
                 return;
             }
             
-            // Get latest boarding records for all the crew members at once
-            const latestBoardings = await db.Lichsuditau.findAll({
-                attributes: [
-                    'thuyenvien_id',
-                    'timelentau'
-                ],
+            // Get the crew records with their boarding times
+            const crewMembers = await db.Thuyenvien.findAll({
+                attributes: ['id_thuyenvien', 'thoigian_lenTauDuKien'],
                 where: {
-                    thuyenvien_id: {
+                    id_thuyenvien: {
                         [db.Sequelize.Op.in]: crewIds
+                    },
+                    thoigian_lenTauDuKien: {
+                        [db.Sequelize.Op.not]: null
                     }
                 },
-                group: ['thuyenvien_id'],
-                order: [['id_lichsuditau', 'DESC']],
                 raw: true
             });
             
             // Convert to the desired format
-            latestBoardings.forEach(record => {
-                if (record.timelentau) {
-                    const date = new Date(record.timelentau);
+            crewMembers.forEach(record => {
+                if (record.thoigian_lenTauDuKien) {
+                    const date = new Date(record.thoigian_lenTauDuKien);
+                    
                     if (!isNaN(date.getTime())) {
-                        // Format: YYYY-MM-DD H:i:s
+                        // Format: YYYY-MM-DD HH:MM
                         const year = date.getFullYear();
                         const month = String(date.getMonth() + 1).padStart(2, '0');
                         const day = String(date.getDate()).padStart(2, '0');
-                        let hours = date.getHours() - 7;
-                        if (hours < 0) {
-                            hours += 24;
-                        }
-                        hours = String(hours).padStart(2, '0');
+                        const hours = String(date.getHours()).padStart(2, '0');
                         const minutes = String(date.getMinutes()).padStart(2, '0');
-                        const seconds = String(date.getSeconds()).padStart(2, '0');
                         
-                        boardingTimes[record.thuyenvien_id] = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                        boardingTimes[record.id_thuyenvien] = `${year}-${month}-${day} ${hours}:${minutes}`;
                     } else {
-                        boardingTimes[record.thuyenvien_id] = record.timelentau;
+                        boardingTimes[record.id_thuyenvien] = 'Invalid date';
                     }
-                } else {
-                    boardingTimes[record.thuyenvien_id] = null;
                 }
             });
             

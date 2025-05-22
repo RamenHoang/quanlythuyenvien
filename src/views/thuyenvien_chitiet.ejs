@@ -119,10 +119,27 @@
                                             
                                             <!-- Nút cập nhật -->
                                             <div class="text-center mt-4">
-                                                <button type="button" class="btn btn-primary btn-lg" id="btnUpdate"
-                                                    data-toggle="modal" data-target="#updateStatusModal">
-                                                    Cập nhật trạng thái
-                                                </button>
+                                                <div class="btn-group">
+                                                    <% if (thuyenvieninfo.trangthai !== 'Đang trên bờ') { %>
+                                                    <button type="button" class="btn btn-primary" id="statusButtonIdx">
+                                                        Cập nhật trạng thái
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu">
+                                                        <% if (thuyenvieninfo.trangthai === 'Đang trên tàu') { %>
+                                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#waitingStatusModal">Đang chờ tàu</a>
+                                                        <% } %>
+                                                        <% if (thuyenvieninfo.trangthai === 'Đang chờ tàu') { %>
+                                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#boardingStatusModal">Đang trên tàu</a>
+                                                        <% } %>
+                                                        <% if (thuyenvieninfo.trangthai === 'Đang trên tàu') { %>
+                                                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#disembarkingStatusModal">Đang trên bờ</a>
+                                                        <% } %>
+                                                    </div>
+                                                    <% } %>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -502,10 +519,11 @@
                                             <tr>
                                                 <th>Tên tàu</th>
                                                 <th>Vị trí</th>
-                                                <th>Ngày lên tàu</th>
-                                                <th>Giờ lên tàu</th>
+                                                <th>Ngày xuất cảnh</th>
+                                                <th>Ngày giờ tàu</th>
                                                 <th>Ngày rời tàu</th>
                                                 <th>Cảng xuống tàu</th>
+                                                <th>Quốc tịch thuyền</th>
                                                 <th>Thao tác</th>
                                             </tr>
                                         </thead>
@@ -537,9 +555,10 @@
                                                     <%= vitri %>
                                                 </td>
                                                 <td><%= lichsuditauinfo[i].timexuatcanh.toISOString().split('T')[0] %></td>
-                                                <td><%= lichsuditauinfo[i].timelentau.toISOString().split('T')[1].substring(0, 8) %></td>
+                                                <td><%= lichsuditauinfo[i].timelentau.toISOString() %></td>
                                                 <td><%= lichsuditauinfo[i].ngayroitau %></td>
                                                 <td><%= lichsuditauinfo[i].cangroitau %></td>
+                                                <td><%= lichsuditauinfo[i].quoctich_thuyen %></td>
                                                 <td class="text-center">
                                                     <button 
                                                         class="btn btn-sm btn-warning editShipHistoryBtn"
@@ -548,11 +567,9 @@
                                                         data-position-id="<%= lichsuditauinfo[i].chucvu_id %>"
                                                         data-thuyenvien-id="<%= lichsuditauinfo[i].thuyenvien_id %>"
                                                         data-toggle="modal"
-                                                        data-target="#editShipHistoryModal"><i
-                                                        class="fas fa-edit"></i></button>
+                                                        data-target="#editShipHistoryModal"><i class="fas fa-edit"></i></button>
                                                     <button class="btn btn-sm btn-danger delete-btn"
-                                                        data-history-id="<%= lichsuditauinfo[i].id_lichsuditau %>"><i
-                                                        class="fas fa-trash"></i></button>
+                                                        data-history-id="<%= lichsuditauinfo[i].id_lichsuditau %>"><i class="fas fa-trash"></i></button>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -804,32 +821,136 @@
                         </div>
                     </div>
 
-                    <!-- MODAL POPUP CẬP NHẬT TRẠNG THÁI THUYỀN VIÊN -->
-                    <div class="modal fade" id="updateStatusModal" tabindex="-1" role="dialog" aria-labelledby="updateStatusModalLabel"
-                        aria-hidden="true">
-                        <div class="modal-dialog" role="document">
+                    <!-- MODAL POPUP CẬP NHẬT TRẠNG THÁI - WAITING STATUS -->
+                    <div class="modal fade" id="waitingStatusModal" tabindex="-1" role="dialog" aria-labelledby="waitingStatusModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="updateStatusModalLabel">Cập nhật trạng thái thuyền viên</h5>
+                                    <h5 class="modal-title" id="waitingStatusModalLabel">Cập nhật trạng thái - Đang chờ tàu</h5>
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <form id="updateStatusForm" action="/cap-nhat-trang-thai/<%= thuyenvieninfo.id_thuyenvien %>" method="POST">
+                                    <form id="waitingStatusForm" action="/cap-nhat-trang-thai/<%= thuyenvieninfo.id_thuyenvien %>" method="POST">
+                                        <input type="hidden" name="trangthai" value="Đang chờ tàu">
+                                        
                                         <div class="form-group">
-                                            <label for="status">Trạng thái:</label>
-                                            <select class="form-control" id="status" name="trangthai">
-                                                <option value="Đang chờ tàu" <%= thuyenvieninfo.trangthai === 'Đang chờ tàu' ? 'selected' : '' %>>Đang chờ tàu</option>
-                                                <option value="Đang trên tàu" <%= thuyenvieninfo.trangthai === 'Đang trên tàu' ? 'selected' : '' %>>Đang trên tàu</option>
-                                                <option value="Đang trên bờ" <%= thuyenvieninfo.trangthai === 'Đang trên bờ' ? 'selected' : '' %>>Đang trên bờ</option>
-                                            </select>
+                                            <label>Thời gian lên tàu dự kiến:</label>
+                                            <input type="datetime-local" class="form-control" name="thoigian_lenTauDuKien">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Cảng xuất cảnh:</label>
+                                            <input type="text" class="form-control" name="cangroitau">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Ngày rời tàu:</label>
+                                            <input type="date" class="form-control" name="ngayroitau">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Quốc tịch thuyền:</label>
+                                            <input type="text" class="form-control" name="quoctich_thuyen">
                                         </div>
                                     </form>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                                    <button type="submit" class="btn btn-primary" form="updateStatusForm">Lưu thay đổi</button>
+                                    <button type="submit" class="btn btn-primary" form="waitingStatusForm">Lưu thay đổi</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODAL POPUP CẬP NHẬT TRẠNG THÁI - Đang trên tàu -->
+                    <div class="modal fade" id="boardingStatusModal" tabindex="-1" role="dialog" aria-labelledby="boardingStatusModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="boardingStatusModalLabel">Cập nhật trạng thái - Đang trên tàu</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="boardingStatusForm" action="/cap-nhat-trang-thai/<%= thuyenvieninfo.id_thuyenvien %>" method="POST">
+                                        <input type="hidden" name="trangthai" value="Đang trên tàu">
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Tên tàu:</label>
+                                                    <select class="form-control" name="tau_id" required>
+                                                        <% tauinfo.forEach(function(tau) { %>
+                                                        <option value="<%= tau.id_tau %>"><%= tau.tentau %></option>
+                                                        <% }); %>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Vị trí:</label>
+                                                    <select class="form-control" name="chucvu_id" required>
+                                                        <% chucvuinfo.forEach(function(chucvu) { %>
+                                                        <option value="<%= chucvu.id_chucvu %>"><%= chucvu.tenchucvu %></option>
+                                                        <% }); %>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Ngày xuất cảnh:</label>
+                                                    <input type="date" class="form-control" name="timexuatcanh" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Ngày giờ lên tàu:</label>
+                                                    <input type="datetime-local" class="form-control" name="timelentau" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-primary" form="boardingStatusForm">Lưu thay đổi</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODAL POPUP CẬP NHẬT TRẠNG THÁI - DISEMBARKING -->
+                    <div class="modal fade" id="disembarkingStatusModal" tabindex="-1" role="dialog" aria-labelledby="disembarkingStatusModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="disembarkingStatusModalLabel">Cập nhật trạng thái - Đang trên bờ</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="disembarkingStatusForm" action="/cap-nhat-trang-thai/<%= thuyenvieninfo.id_thuyenvien %>" method="POST">
+                                        <input type="hidden" name="trangthai" value="Đang trên bờ">
+                                        <div class="form-group">
+                                            <label>Cảng xuất cảnh:</label>
+                                            <input type="text" class="form-control" name="cangroitau">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Ngày rời tàu:</label>
+                                            <input type="date" class="form-control" name="ngayroitau">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Quốc tịch thuyền:</label>
+                                            <input type="text" class="form-control" name="quoctich_thuyen">
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-primary" form="disembarkingStatusForm">Lưu thay đổi</button>
                                 </div>
                             </div>
                         </div>
@@ -939,12 +1060,12 @@
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>Ngày lên tàu:</label>
+                                            <label>Ngày xuất cảnh:</label>
                                             <input type="date" class="form-control" id="newOnboardDate" name="timexuatcanh" required>
                                         </div>
                                         <div class="form-group">
-                                            <label>Giờ lên tàu:</label>
-                                            <input type="time" class="form-control" id="newOnboardTime" name="timelentau" required>
+                                            <label>Ngày giờ lên tàu:</label>
+                                            <input type="datetime-local" class="form-control" id="newOnboardTime" name="timelentau" required>
                                         </div>
                                         <div class="form-group">
                                             <label>Ngày rời tàu:</label>
@@ -953,6 +1074,10 @@
                                         <div class="form-group">
                                             <label>Cảng xuống tàu:</label>
                                             <input type="text" class="form-control" id="newPort" name="cangroitau">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Quốc tịch thuyền:</label>
+                                            <input type="text" class="form-control" id="newNationality" name="quoctich_thuyen">
                                         </div>
                                     </form>
                                 </div>
@@ -996,12 +1121,12 @@
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>Ngày lên tàu:</label>
+                                            <label>Ngày xuất cảnh:</label>
                                             <input type="date" class="form-control" id="editOnboardDate" name="timexuatcanh" required>
                                         </div>
                                         <div class="form-group">
-                                            <label>Giờ lên tàu:</label>
-                                            <input type="time" class="form-control" id="editOnboardTime" name="timelentau" required>
+                                            <label>Ngày giờ lên tàu:</label>
+                                            <input type="datetime-local" class="form-control" id="editOnboardTime" name="timelentau" required>
                                         </div>
                                         <div class="form-group">
                                             <label>Ngày rời tàu:</label>
@@ -1010,6 +1135,10 @@
                                         <div class="form-group">
                                             <label>Cảng xuống tàu:</label>
                                             <input type="text" class="form-control" id="editPort" name="cangroitau" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Quốc tịch thuyền:</label>
+                                            <input type="text" class="form-control" id="editNationality" name="quoctich_thuyen" required>
                                         </div>
                                     </form>
                                 </div>
@@ -1252,7 +1381,7 @@
                                         <div class="form-group">
                                             <label>File chứng chỉ:</label>
                                             <input type="file" class="form-control-file" name="crew_certificate_file" accept=".pdf,.jpg,.jpeg,.png">
-                                            <small class="form-text text-muted">Chấp nhận file PDF, JPG, JPEG, PNG</small>
+                                                                                       <small class="form-text text-muted">Chấp nhận file PDF, JPG, JPEG, PNG</small>
                                         </div>
                                     </form>
                                 </div>
@@ -1377,175 +1506,72 @@
     </a>
 
     <%- include('partials/logout-modal') %>
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="/js/style.js"></script>
+    <script src="/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="/js/demo/datatables-demo.js"></script>
+
+    <!-- Make sure this script is at the very end -->
     <script>
-        document.getElementById('status').addEventListener('change', function () {
-           
-            var workingFields = document.getElementById('workingFields');
-            var ashoreFields = document.getElementById('ashoreFields');
-
-            // Reset all
-            waitingFields.style.display = 'none';
-            workingFields.style.display = 'none';
-            ashoreFields.style.display = 'none';
-
-            if (this.value === 'Đang chờ tàu') {
-                waitingFields.style.display = 'block';
-            } else if (this.value === 'Đang làm việc trên tàu') {
-                workingFields.style.display = 'block';
-            } else if (this.value === 'Đang trên bờ') {
-                ashoreFields.style.display = 'block';
+        // Ensure document is ready before executing
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM fully loaded");
+            
+            // Set up main status button default action based on current status
+            const statusButton = document.getElementById('statusButton');
+            if (statusButton) {
+                statusButton.addEventListener('click', function() {
+                    const currentStatus = '<%= thuyenvieninfo.trangthai %>';
+                    
+                    // Open the appropriate modal based on current status
+                    if (currentStatus === 'Đang trên tàu') {
+                        $('#disembarkingStatusModal').modal('show');
+                    } else if (currentStatus === 'Đang chờ tàu') {
+                        $('#boardingStatusModal').modal('show');
+                    } else {
+                        $('#waitingStatusModal').modal('show');
+                    }
+                });
+            }
+            
+            // Handle returning fields visibility in disembarking modal
+            const disembarkingTypeSelect = document.getElementById('disembarkingTypeSelect');
+            const disembarkingReturningFields = document.getElementById('disembarkingReturningFields');
+            
+            if (disembarkingTypeSelect && disembarkingReturningFields) {
+                // Initial state
+                disembarkingReturningFields.style.display = 
+                    disembarkingTypeSelect.value === 'Sẽ quay lại' ? 'block' : 'none';
+                
+                // Change handler
+                disembarkingTypeSelect.addEventListener('change', function() {
+                    disembarkingReturningFields.style.display = 
+                        this.value === 'Sẽ quay lại' ? 'block' : 'none';
+                });
+            }
+            
+            // Link disembarkation status with return type
+            const disembarkingStatusSelect = document.getElementById('disembarkingStatusSelect');
+            
+            if (disembarkingStatusSelect && disembarkingTypeSelect) {
+                disembarkingStatusSelect.addEventListener('change', function() {
+                    if (this.value === 'Đang chờ tàu') {
+                        disembarkingTypeSelect.value = 'Sẽ quay lại';
+                        if (disembarkingReturningFields) {
+                            disembarkingReturningFields.style.display = 'block';
+                        }
+                    } else if (this.value === 'Đang trên bờ') {
+                        disembarkingTypeSelect.value = 'Nghỉ việc';
+                        if (disembarkingReturningFields) {
+                            disembarkingReturningFields.style.display = 'none';
+                        }
+                    }
+                });
             }
         });
     </script>
-        <script src="/vendor/jquery/jquery.min.js"></script>
-        <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-        <script src="/vendor/jquery-easing/jquery.easing.min.js"></script>
-
-        <script src="/js/style.js"></script>
-
-        <script src="/vendor/datatables/jquery.dataTables.min.js"></script>
-        <script src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
-
-        <script src="/js/demo/datatables-demo.js"></script>
-
-        <script>
-            // Tab functionality
-            $(document).ready(function () {
-                // Load certificates via AJAX and then select the correct one
-                $.ajax({
-                    url: '/api/chung-chi',
-                    type: 'GET',
-                    success: function(certificates) {
-                        // Clear and populate the dropdown
-                        var select = $('#editCrewCertName');
-                        select.empty();
-                        
-                        certificates.forEach(function(cert) {
-                            select.append('<option value="' + cert.id_chungchi + '">' + cert.tenchungchi + '</option>');
-                        });
-
-                        var select = $('#addCertificateName');
-                        select.empty();
-                        
-                        certificates.forEach(function(cert) {
-                            select.append('<option value="' + cert.id_chungchi + '">' + cert.tenchungchi + '</option>');
-                        });
-                        
-                        // // Set the correct certificate
-                        // select.val(chungchiId);
-                    },
-                    error: function() {
-                        console.error('Failed to load certificates');
-                    }
-                });
-
-                // Enable Bootstrap tabs
-                $('#crewTabs a').on('click', function (e) {
-                    e.preventDefault();
-                    $(this).tab('show');
-                });
-
-                // Education Edit Button Click
-                $('.editEducationBtn').on('click', function() {
-                    // Get data from button attributes
-                    const id = $(this).data('id');
-                    const school = $(this).data('school');
-                    const program = $(this).data('program');
-                    const year = $(this).data('year');
-                    
-                    // Populate form fields with current data
-                    $('#editEducationId').val(id);
-                    $('#editSchool').val(school);
-                    $('#editProgram').val(program);
-                    $('#editYear').val(year);
-                });
-                
-                // Language Certificate Edit Button Click
-                $('.editLanguageBtn').on('click', function() {
-                    // Get data from button attributes
-                    const id = $(this).data('id');
-                    const language = $(this).data('language');
-                    const certificate = $(this).data('certificate');
-                    const score = $(this).data('score');
-                    const issued = $(this).data('issued');
-                    const expired = $(this).data('expired');
-                    const file = $(this).data('file');
-                    
-                    // Populate form fields with current data
-                    $('#editLanguageId').val(id);
-                    $('#editLanguage').val(language);
-                    $('#editCertificate').val(certificate);
-                    $('#editScore').val(score);
-                    $('#editIssued').val(issued);
-                    $('#editExpired').val(expired);
-                    
-                    // Update file info section
-                    if (file && file !== '') {
-                        $('#currentFileName').html('<a href="' + file + '" target="_blank">View current file</a>');
-                    } else {
-                        $('#currentFileName').text('No file attached');
-                    }
-                });
-                
-                // Crew Certificate Edit Button Click
-                $('.editCrewCertBtn').on('click', function() {
-                    // Get data from button attributes
-                    const id = $(this).data('id');
-                    const certId = $(this).data('cert-id'); // Changed from cert-name to cert-id
-                    const certNumber = $(this).data('cert-number');
-                    const issued = $(this).data('issued');
-                    const expired = $(this).data('expired');
-                    const issuer = $(this).data('issuer');
-                    const rank = $(this).data('rank');
-                    const file = $(this).data('file');
-                    
-                    // Populate form fields with current data
-                    $('#editCrewCertId').val(id);
-                    $('#editCrewCertName').val(certId); // This now selects the dropdown option with the correct ID
-                    $('#editCrewCertNumber').val(certNumber);
-                    $('#editCrewCertIssued').val(issued);
-                    $('#editCrewCertExpired').val(expired);
-                    $('#editCrewCertIssuer').val(issuer);
-                    $('#editCrewCertRank').val(rank);
-                    
-                    // Update file info section
-                    if (file && file !== '') {
-                        $('#currentCrewCertFileName').html('<a href="' + file + '" target="_blank">View current file</a>');
-                    } else {
-                        $('#currentCrewCertFileName').text('No file attached');
-                    }
-                });
-                
-                // Ship History Edit Button Click
-                $('.editShipHistoryBtn').on('click', function() {
-                    // Get data from button attributes
-                    const historyId = $(this).data('history-id');
-                    const shipId = $(this).data('ship-id');
-                    const positionId = $(this).data('position-id');
-                    const thuyenvienId = $(this).data('thuyenvien-id');
-                    
-                    // Find the corresponding row to get other data
-                    const row = $(this).closest('tr');
-                    const onboardDate = row.find('td:eq(2)').text(); // Date format: YYYY-MM-DD
-                    const onboardTime = row.find('td:eq(3)').text(); // Time format: HH:MM:SS
-                    const offboardDate = row.find('td:eq(4)').text();
-                    const port = row.find('td:eq(5)').text();
-                    
-                    // Populate form fields with current data
-                    $('#editHistoryId').val(historyId);
-                    $('#editThuyenVienId').val(thuyenvienId);
-                    $('#editShipName').val(shipId);
-                    $('#editPosition').val(positionId);
-                    $('#editOnboardDate').val(onboardDate);
-                    $('#editOnboardTime').val(onboardTime.substring(0, 5)); // Extract HH:MM from HH:MM:SS
-                    $('#editOffboardDate').val(offboardDate);
-                    $('#editPort').val(port);
-                });
-                
-                // Additional event handlers...
-            });
-        </script>
-    </body>
-
+</body>
 </html>

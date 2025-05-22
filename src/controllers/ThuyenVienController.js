@@ -885,10 +885,66 @@ let createNewThuyenVien = async (req, res) => {
 let updateThuyenVienStatus = async (req, res) => {
     try {
         const thuyenvien_id = req.params.id;
-        const status = req.body.trangthai; // Assuming status is sent in the request body
+        const { trangthai, tau_id, chucvu_id, timexuatcanh, timelentau, thoigian_lenTauDuKien, 
+                ngayroitau, cangroitau, quoctich_thuyen, tinh_trang_roi_tau } = req.body;
         
-        await ThuyenVienServices.updateThuyenVienStatus(thuyenvien_id, status);
+        const last_lichsuditau = await db.Lichsuditau.findOne({
+            where: {
+                thuyenvien_id: thuyenvien_id,
+            },
+            order: [['id_lichsuditau', 'DESC']]
+        });
         
+        if (trangthai === 'Đang chờ tàu') {
+            await db.Thuyenvien.update(
+                {
+                    trangthai: trangthai,
+                    thoigian_lenTauDuKien: thoigian_lenTauDuKien ? thoigian_lenTauDuKien : null,
+                }
+                , { where: { id_thuyenvien: thuyenvien_id } }
+            );
+            await db.Lichsuditau.update(
+                {
+                    ngayroitau: req.body.ngayroitau,
+                    cangroitau: req.body.cangroitau,
+                    quoctich_thuyen: req.body.quoctich_thuyen
+                }
+                , { where: { id_lichsuditau: last_lichsuditau.id_lichsuditau } }
+            );
+        } else if (trangthai === 'Đang trên tàu') {
+            await db.Thuyenvien.update(
+                {
+                    trangthai: trangthai,
+                    thoigian_lenTauDuKien: null,
+                }
+                , { where: { id_thuyenvien: thuyenvien_id } }
+            );
+            const newtimelentau = timelentau.replace('T', ' ');
+            await db.Lichsuditau.create({
+                    thuyenvien_id: thuyenvien_id,
+                    tau_id: tau_id,
+                    chucvu_id: chucvu_id,
+                    timexuatcanh: timexuatcanh,
+                    timelentau: newtimelentau,
+                });
+        } else {
+            await db.Thuyenvien.update(
+                {
+                    trangthai: trangthai,
+                    thoigian_lenTauDuKien: thoigian_lenTauDuKien ? thoigian_lenTauDuKien : null,
+                }
+                , { where: { id_thuyenvien: thuyenvien_id } }
+            );
+            await db.Lichsuditau.update(
+                {
+                    ngayroitau: req.body.ngayroitau,
+                    cangroitau: req.body.cangroitau,
+                    quoctich_thuyen: req.body.quoctich_thuyen
+                }
+                , { where: { id_lichsuditau: last_lichsuditau.id_lichsuditau } }
+            );
+        }
+
         return res.redirect('/thuyen-vien/' + thuyenvien_id);
     } catch (error) {
         console.error('Error updating status:', error);
