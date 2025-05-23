@@ -196,10 +196,11 @@
                         select.append('<option value="' + cert.id_chungchi + '">' + cert.tenchungchi + '</option>');
                     });
                     
-                    // Initialize the multi-select plugin
+                    // Initialize the multi-select plugin with closeOnSelect: false to keep dropdown open
                     select.select2({
                         placeholder: 'Chọn các chứng chỉ...',
-                        width: '100%'
+                        width: '100%',
+                        closeOnSelect: false
                     });
                     
                     // Add change event for certificate filter AFTER select2 initialization
